@@ -1,37 +1,39 @@
 import { useEffect, useState } from "react";
 import { Book } from "../types/Book";
 import { useNavigate } from "react-router-dom";
+import { fetchBooks } from "../api/BooksAPI";
+import Pagination from "./Pagination";
 
 function BookList({selectedCategories}:  {selectedCategories: string[]}) {
     const [books, setBooks] = useState<Book[]>([])
     const [pageSize, setPageSize] = useState<number>(10);
     const [pageNum, setPageNum] = useState<number>(1);
-    const [totalItems, setTotalItems] = useState<number>(0);
     const [totalPages, setTotalPages] = useState<number>(0);
     const navigate = useNavigate();
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
 
     const [sortBy, setSortBy] = useState('');
 
     useEffect(() => {
-        const fetchBooks = async () => {
-
-            const categoryParams = selectedCategories
-            .map((cat) => `bookCategories=${encodeURIComponent(cat)}`)
-            .join('&');
-
-            const url = `https://localhost:5000/Book/AllBooks?pageSize=${pageSize}&pageNum=${pageNum}${selectedCategories.length ? `&${categoryParams}` : ``}` +
-                        (sortBy ? `&sortBy=${sortBy}` : '');
-    
-            const response = await fetch(url);
-            const data = await response.json();
+        const loadBooks = async () => {
+            try {
+                setLoading(true);
+                const data = await fetchBooks(pageSize, pageNum, selectedCategories);
             setBooks(data.books);
-            setTotalItems(data.totalNumBooks);
             setTotalPages(Math.ceil(data.totalNumBooks / pageSize));
+            } catch (error) {
+                setError((error as Error).message);
+            } finally {
+                setLoading(false);
+            }
         };
     
-        fetchBooks();
+        loadBooks();
     }, [pageSize, pageNum, sortBy, selectedCategories]);
     
+    if (loading) return <p>Loading books...</p>
+    if (error) return <p className="text-red-500">Error: {error}</p>
 
     return (
         <>
@@ -61,6 +63,17 @@ function BookList({selectedCategories}:  {selectedCategories: string[]}) {
                     </div>
                 </div>
             ))}
+            
+            <Pagination 
+                currentPage={pageNum}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                onPageChange={setPageNum}
+                onPageSizeChange={(newSize) => {
+                    setPageSize(newSize);
+                    setPageNum(1); // Reset to first page when page size changes
+                }}
+                />
 
         {/* <button disabled={pageNum === 1} onClick={() => setPageNum(pageNum - 1)}>Previous</button>
 
@@ -72,39 +85,7 @@ function BookList({selectedCategories}:  {selectedCategories: string[]}) {
 
         <button disabled={pageNum === totalPages} onClick={() => setPageNum(pageNum + 1)}>Next</button> */}
 
-        <div className="btn-group" role="group" aria-label="Pagination">
-            <button className="btn btn-outline-primary" disabled={pageNum === 1} onClick={() => setPageNum(pageNum - 1)}>
-                Previous
-            </button>
-            {[...Array(totalPages)].map((_, i) => (
-                <button 
-                    key={i + 1} 
-                    className={`btn ${pageNum === i + 1 ? "btn-primary" : "btn-outline-primary"}`} 
-                    onClick={() => setPageNum(i + 1)} 
-                    disabled={pageNum === (i + 1)}>
-                    {i + 1}
-                </button>
-            ))}
-            <button className="btn btn-outline-primary" disabled={pageNum === totalPages} onClick={() => setPageNum(pageNum + 1)}>
-                Next
-            </button>
-        </div>
-
-        <br />
-        <label>
-            Results per page:
-            <select value={pageSize} 
-            onChange={(p) => {setPageSize(Number(p.target.value))
-                setPageNum(1);
-            }}
-            >
-
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-            </select>
-        </label>
-
+        
         </>
     );
 }
