@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "undefined/subscriptions/0ef5f189-ea0d-4abd-9a93-7f3c0aa24a5a/resourceGroups/appsvc_windows_centralus/providers/Microsoft.Web/sites/Mission13-Bird-Backend",
+    "appService.deploySubpath": "backend\\Mission11.api\\publish"
+}
