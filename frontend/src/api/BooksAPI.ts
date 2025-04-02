@@ -5,7 +5,6 @@ interface FetchBooksResponse {
     totalNumBooks: number;
 }
 
-// const API_URL = 'https://localhost:5000/Book';
     const API_URL = 'https://mission13-cb-backend.azurewebsites.net/Book'
 
 export const fetchBooks = async (   
