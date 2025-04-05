@@ -7,10 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+     "postbuild": "node -e \"require('fs').copyFileSync('public/staticwebapp.config.json', 'dist/staticwebapp.config.json')\""
   },
   "dependencies": {
-    "bootstrap": "^5.3.3",
+    "bootstrap": "^5.3.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.4.0"
